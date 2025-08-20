@@ -1,0 +1,38 @@
+{
+  "name": "Biostats Tool Dev",
+  "image": "mcr.microsoft.com/devcontainers/python:3.11", 
+
+  // Features add common tools (node, git, etc.)
+  "features": {
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.11"
+    }
+  },
+
+  // Commands run after container is created
+  "postCreateCommand": "pip install -r requirements.txt",
+
+  // VS Code settings inside Codespace
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.terminal.activateEnvironment": true
+      },
+      "extensions": [
+        "ms-python.python",
+        "ms-toolsai.jupyter",
+        "ms-python.vscode-pylance",
+        "github.copilot"
+      ]
+    }
+  },
+
+  // Forward Streamlit or Flask ports automatically
+  "forwardPorts": [8501, 5000],
+
+  // Optional: mount 'data' so it persists between rebuilds
+  "mounts": [
+    "source=${localWorkspaceFolder}/data,target=/workspace/data,type=bind"
+  ]
+}
