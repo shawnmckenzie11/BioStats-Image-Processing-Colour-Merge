@@ -45,7 +45,8 @@ def main():
             output_folder = "test_output"
         else:
             output_folder = "test_input"
-        convert_tif_to_text(os.path.join('data/raw_tif_files', file), output_folder)
+        # Uncomment this line below if we have new tif files to process
+        # convert_tif_to_text(os.path.join('data/raw_tif_files', file), output_folder)
 
     # df = pd.read_csv("../data/sample.csv")
     # print(df.head())
