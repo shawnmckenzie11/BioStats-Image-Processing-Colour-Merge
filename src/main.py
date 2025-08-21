@@ -1,6 +1,6 @@
-import pandas as pd
-import os
-from PIL import Image
+#import pandas as pd
+import os, re
+#from PIL import Image
 
 def convert_tif_to_text(file, output_folder):
     """
@@ -31,8 +31,57 @@ def convert_tif_to_text(file, output_folder):
     
     print(f"Image data saved as RGB text to {output_path}")
 
-# Example usage:
-# convert_tif_to_text("input_image.tif", "./output")
+
+def merge_channels(folder_path, channel_a, channel_b, output_folder):
+    """
+    For each set ID, merge the contents of channel_a and channel_b files
+    by summing RGB tuples line by line.
+
+    Args:
+        folder_path (str): folder containing input files
+        channel_a (str): first channel to merge (e.g. "CH2")
+        channel_b (str): second channel to merge (e.g. "CH4")
+        output_folder (str): where merged files will be written
+    """
+    # regex to extract the set ID and channel
+    pattern = re.compile(r'(?:[^_]*_){6}(\d{5})_(CH\d)')
+
+    # map: set_id -> {channel: filepath}
+    files_by_set = {}
+
+    for filename in os.listdir(folder_path):
+        match = pattern.search(filename)
+        if match:
+            set_id, channel = match.groups()
+            files_by_set.setdefault(set_id, {})[channel] = os.path.join(folder_path, filename)
+
+    os.makedirs(output_folder, exist_ok=True)
+
+    for set_id, channels in sorted(files_by_set.items()):
+        if channel_a in channels and channel_b in channels:
+            file_a = channels[channel_a]
+            file_b = channels[channel_b]
+
+            merged_lines = []
+            with open(file_a, "r") as fa, open(file_b, "r") as fb:
+                for line_a, line_b in zip(fa, fb):
+                    # parse tuples, e.g. "(1,0,0)"
+                    tup_a = tuple(map(int, line_a.strip("()\n ").split(",")))
+                    tup_b = tuple(map(int, line_b.strip("()\n ").split(",")))
+
+                    # sum elementwise
+                    merged = tuple(a + b for a, b in zip(tup_a, tup_b))
+                    merged_lines.append(f"{merged}\n")
+
+            # write merged output
+            out_file = os.path.join(output_folder, f"merged_{set_id}_{channel_a}_{channel_b}.txt")
+            with open(out_file, "w") as fout:
+                fout.writelines(merged_lines)
+
+            print(f"Merged {set_id}: {channel_a} + {channel_b} -> {out_file}")
+        else:
+            print(f"Skipping {set_id}: missing {channel_a} or {channel_b}")
+
 
 
 
@@ -48,8 +97,16 @@ def main():
         # Uncomment this line below if we have new tif files to process
         # convert_tif_to_text(os.path.join('data/raw_tif_files', file), output_folder)
 
-    # df = pd.read_csv("../data/sample.csv")
-    # print(df.head())
+    colour_mapping = {
+        'R': 'CH1',
+        'G': 'CH2',
+        'B': 'CH4',
+        'All': 'CH3'
+    }
+    # User specifies 2 colours to merge:
+    merged_colours = ['R', 'G']
+    print(f"Merging colours: {', '.join(merged_colours)}")
+    merge_channels('test_input', colour_mapping[merged_colours[0]], colour_mapping[merged_colours[1]], 'test_output')
 
 if __name__ == "__main__":
     main()

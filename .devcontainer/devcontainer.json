@@ -10,7 +10,7 @@
   },
 
   // Commands run after container is created
-  "postCreateCommand": "pip install -r requirements.txt",
+  "postCreateCommand": "python -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt",
 
   // VS Code settings inside Codespace
   "customizations": {
