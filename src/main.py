@@ -128,6 +128,7 @@ def main():
         # Uncomment this line below if we have new tif files to process
         w, h = convert_tif_to_text(os.path.join('data/raw_tif_files', file), output_folder)
 
+    print("Conversion to text files completed.")
     colour_mapping = {
         'R': 'CH1',
         'G': 'CH2',
@@ -139,7 +140,8 @@ def main():
     merged_colours = ['R', 'G']
     print(f"Merging colours: {', '.join(merged_colours)}")
     merge_channels('data/test_input', colour_mapping[merged_colours[0]], colour_mapping[merged_colours[1]], 'data/test_output')
+    print
     convert_merged_txts_to_tifs('data/test_output', 'data/merged_tif_files', w, h)
-
+    print("Converted to TIFFs. Files saved to 'data/merged_tif_files'.")
 if __name__ == "__main__":
     main()
