@@ -1,5 +1,6 @@
 import pandas as pd
 import os, re
+import numpy as np
 from PIL import Image
 
 def convert_tif_to_text(file, output_folder):
@@ -9,10 +10,13 @@ def convert_tif_to_text(file, output_folder):
     Args:
         file (str): Path to input .tif file.
         output_folder (str): Directory where output .txt file will be saved.
+    Returns:
+        width, height: int, int: dimensions of the image.
     """
     # Ensure output folder exists
     os.makedirs(output_folder, exist_ok=True)
     
+
     # Derive output filename
     base = os.path.splitext(os.path.basename(file))[0]
     output_path = os.path.join(output_folder, f"{base}_pixels.txt")
@@ -30,6 +34,7 @@ def convert_tif_to_text(file, output_folder):
                     txtfile.write(f"{r},{g},{b}\n")
     
     print(f"Image data saved as RGB text to {output_path}")
+    return width, height
 
 
 def merge_channels(folder_path, channel_a, channel_b, output_folder):
@@ -83,7 +88,39 @@ def merge_channels(folder_path, channel_a, channel_b, output_folder):
             print(f"Skipping {set_id}: missing {channel_a} or {channel_b}")
 
 
+def convert_merged_txts_to_tifs(folder, output_folder, width, height):
+    """
+    Convert all 'Merged*.txt' files in a folder into TIFF images.
+    
+    Args:
+        folder (str): Path to the folder containing txt files.
+        output_folder (str): Directory where TIFF files will be saved.
+        width (int): Width of the image.
+        height (int): Height of the image.
+    """
 
+    os.makedirs(output_folder, exist_ok=True)
+    for filename in os.listdir(folder):
+        if filename.startswith("merged") and filename.endswith(".txt"):
+            txt_path = os.path.join(folder, filename)
+            print(f"Processing {txt_path}")
+            # Read RGB tuples from txt
+            rgb_list = []
+            with open(txt_path, "r") as f:
+                for line in f:
+                    tup = tuple(map(int, line.strip("()\n ").split(",")))
+                    rgb_list.append(tup)
+
+            # Convert to NumPy array (H, W, 3)
+            arr = np.array(rgb_list, dtype=np.uint8).reshape((height, width, 3))
+
+            # Save as TIFF
+            tif_name = os.path.splitext(filename)[0] + ".tif"
+            tif_path = os.path.join(output_folder, tif_name)
+            img = Image.fromarray(arr)
+            img.save(tif_path)
+
+            print(f"Converted {filename} -> {tif_name}")
 
 def main():
     print("Biostats: Tiff RBG Tile Image Processor")
@@ -95,7 +132,7 @@ def main():
         else:
             output_folder = "data/test_input"
         # Uncomment this line below if we have new tif files to process
-        convert_tif_to_text(os.path.join('data/raw_tif_files', file), output_folder)
+        w, h = convert_tif_to_text(os.path.join('data/raw_tif_files', file), output_folder)
 
     colour_mapping = {
         'R': 'CH1',
@@ -107,6 +144,7 @@ def main():
     merged_colours = ['R', 'G']
     print(f"Merging colours: {', '.join(merged_colours)}")
     merge_channels('data/test_input', colour_mapping[merged_colours[0]], colour_mapping[merged_colours[1]], 'data/test_output')
+    convert_merged_txts_to_tifs('data/test_output', 'data/merged_tif_files', w, h)
 
 if __name__ == "__main__":
     main()
