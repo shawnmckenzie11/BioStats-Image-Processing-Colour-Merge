@@ -1,6 +1,6 @@
-#import pandas as pd
+import pandas as pd
 import os, re
-#from PIL import Image
+from PIL import Image
 
 def convert_tif_to_text(file, output_folder):
     """
@@ -91,11 +91,11 @@ def main():
     # Convert tif files to readable text files (___)
     for file in os.listdir('data/raw_tif_files'):
         if file.endswith("Merge.tif"):
-            output_folder = "test_output"
+            output_folder = "data/test_output"
         else:
-            output_folder = "test_input"
+            output_folder = "data/test_input"
         # Uncomment this line below if we have new tif files to process
-        # convert_tif_to_text(os.path.join('data/raw_tif_files', file), output_folder)
+        convert_tif_to_text(os.path.join('data/raw_tif_files', file), output_folder)
 
     colour_mapping = {
         'R': 'CH1',
@@ -106,7 +106,7 @@ def main():
     # User specifies 2 colours to merge:
     merged_colours = ['R', 'G']
     print(f"Merging colours: {', '.join(merged_colours)}")
-    merge_channels('test_input', colour_mapping[merged_colours[0]], colour_mapping[merged_colours[1]], 'test_output')
+    merge_channels('data/test_input', colour_mapping[merged_colours[0]], colour_mapping[merged_colours[1]], 'data/test_output')
 
 if __name__ == "__main__":
     main()
