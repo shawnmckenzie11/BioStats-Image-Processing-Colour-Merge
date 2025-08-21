@@ -33,7 +33,6 @@ def convert_tif_to_text(file, output_folder):
                     r, g, b = pixels[x, y]
                     txtfile.write(f"{r},{g},{b}\n")
     
-    print(f"Image data saved as RGB text to {output_path}")
     return width, height
 
 
@@ -82,8 +81,6 @@ def merge_channels(folder_path, channel_a, channel_b, output_folder):
             out_file = os.path.join(output_folder, f"merged_{set_id}_{channel_a}_{channel_b}.txt")
             with open(out_file, "w") as fout:
                 fout.writelines(merged_lines)
-
-            print(f"Merged {set_id}: {channel_a} + {channel_b} -> {out_file}")
         else:
             print(f"Skipping {set_id}: missing {channel_a} or {channel_b}")
 
@@ -103,7 +100,6 @@ def convert_merged_txts_to_tifs(folder, output_folder, width, height):
     for filename in os.listdir(folder):
         if filename.startswith("merged") and filename.endswith(".txt"):
             txt_path = os.path.join(folder, filename)
-            print(f"Processing {txt_path}")
             # Read RGB tuples from txt
             rgb_list = []
             with open(txt_path, "r") as f:
@@ -119,8 +115,6 @@ def convert_merged_txts_to_tifs(folder, output_folder, width, height):
             tif_path = os.path.join(output_folder, tif_name)
             img = Image.fromarray(arr)
             img.save(tif_path)
-
-            print(f"Converted {filename} -> {tif_name}")
 
 def main():
     print("Biostats: Tiff RBG Tile Image Processor")
@@ -140,6 +134,7 @@ def main():
         'B': 'CH4',
         'All': 'CH3'
     }
+    
     # User specifies 2 colours to merge:
     merged_colours = ['R', 'G']
     print(f"Merging colours: {', '.join(merged_colours)}")
